@@ -1,5 +1,8 @@
-﻿using System;
+﻿using Serilog.Debugging;
+using System;
 using System.Collections.Generic;
+using System.ComponentModel.Design;
+using System.Linq;
 using TicTacToeObjects;
 
 namespace Game
@@ -78,6 +81,7 @@ namespace Game
                 foreach (var node in Childes)
                     node.Dispose();
                 Childes.Clear();
+                Value.Dispose();
 
                 Dispose(true);
                 GC.SuppressFinalize(this);
@@ -99,33 +103,40 @@ namespace Game
         }
 
         private Node _root;
+        private TicTacToeSymbls _step;
 
         public Matrix<TicTacToeSymbls> Value { get => _root.Value.Clone() as Matrix<TicTacToeSymbls>; }
 
         public TicTacToeTree()
         {
             _root = new Node(new Matrix<TicTacToeSymbls>(TicTacToeSymbls.Space, 3, 3));
-            Generate(_root, TicTacToeRules.FirstStep);
+            _step = TicTacToeRules.FirstStep;
+            Update();
         }
 
-        static private void Generate(Node node, TicTacToeSymbls symbl)
+        static private void Generate(Node node, TicTacToeSymbls symbl, int step)
         {
-            if (node.IsLeaf)
+            if (node.IsLeaf || step == 0)
                 return;
 
             int spaces = node.Value.Count(e => e == TicTacToeSymbls.Space);
             TicTacToeSymbls next_sybml = TicTacToeRules.GetNext(symbl);
 
-            for (int i = 0; i < spaces; i++)
-            {
-                var tmp_field = node.Value.Clone() as Matrix<TicTacToeSymbls>;
-                tmp_field.ReplaceFirst(TicTacToeSymbls.Space, symbl, i);
+            if (node.Childes.Count == 0)
+                for (int i = 0; i < spaces; i++)
+                {
+                    var tmp_field = node.Value.Clone() as Matrix<TicTacToeSymbls>;
+                    tmp_field.ReplaceFirst(TicTacToeSymbls.Space, symbl, i);
 
-                Node new_node = new Node(tmp_field);
-                if (node.AddChilde(new_node))
-                    Generate(new_node, next_sybml);
-            }
+                    Node new_node = new Node(tmp_field);
+                    node.AddChilde(new_node);
+                }
+
+            for (int i = 0; i < node.Childes.Count; i++)
+                Generate(node.Childes[i], next_sybml, step - 1);
         }
+
+        public void Update() => Generate(_root, _step, TicTacToeRules.LOAD_STEPS);
 
         public void MoveTo(Matrix<TicTacToeSymbls> matrix)
         {
@@ -145,19 +156,25 @@ namespace Game
             _root.Dispose();
 
             _root = next_node;
+            _step = TicTacToeRules.GetNext(_step);
         }
 
         public void MoveToBest()
         {
-            Node next_node = _root.Childes[0];
-            for (int i = 0; i <  _root.Childes.Count; i++) 
-                if (next_node.Score < _root.Childes[i].Score)
-                    next_node = _root.Childes[i];
+            float best_score = _root.Childes.Max(x => x.Score);
+            var all_posible_nodes = from node in _root.Childes 
+                                    where node.Score == best_score
+                                    select node;
+
+            Random random = new Random();
+            int choice = random.Next(all_posible_nodes.Count());
+            Node next_node = all_posible_nodes.ElementAt(choice);
 
             _root.RemoveChilde(next_node);
             _root.Dispose();
 
             _root = next_node;
+            _step = TicTacToeRules.GetNext(_step);
         }
     }
 }

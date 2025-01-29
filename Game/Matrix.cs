@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Game;
+using System;
 using System.Collections.Generic;
 
 namespace TicTacToeObjects
@@ -7,16 +8,14 @@ namespace TicTacToeObjects
     {
         VERTICAL = 0b001,
         HORISONTAL = 0b010,
-        SYMETRIC = 0b100,
         VH = VERTICAL | HORISONTAL,
-        VS = VERTICAL | SYMETRIC,
-        HS = HORISONTAL | SYMETRIC,
+        SYMETRIC = 0b100,
         None = 0b000,
-        Null
+        Null = 0b1000
     }
 
 
-    public class Matrix<T> : ICloneable where T : struct
+    public class Matrix<T> : ICloneable, IDisposable where T : struct
     {
         protected T[,] _data;
         int _height;
@@ -192,11 +191,8 @@ namespace TicTacToeObjects
             }
             return MatrixReflexion.Null;
         }
-
         public MatrixReflexion GetReflexionFrom(Matrix<T> other) => other.GetReflexionTo(this);
-
         public bool Similar(Matrix<T> other) => GetReflexionTo(other) != MatrixReflexion.Null;
-
         public void Rotate(MatrixReflexion reflexion)
         {
             var rotated = new Reflexion<T>(reflexion, this);
@@ -226,6 +222,11 @@ namespace TicTacToeObjects
         public override bool Equals(object obj) => GetHashCode() == obj.GetHashCode();
 
         public object Clone() => new Matrix<T>(_data);
+
+        public virtual void Dispose()
+        {
+            GC.SuppressFinalize(this);
+        }
     }
 
     public class Reflexion<T> : Matrix<T> where T : struct
@@ -244,17 +245,17 @@ namespace TicTacToeObjects
                 if (Height <= i || i < 0 || Width <= j || j < 0)
                     throw new IndexOutOfRangeException();
 
-                if ((_reflexion & MatrixReflexion.VERTICAL) == MatrixReflexion.VERTICAL)
-                    i = Height - 1 - i;
-                if ((_reflexion & MatrixReflexion.HORISONTAL) == MatrixReflexion.HORISONTAL)
-                    j = Height - 1 - j;
                 if ((_reflexion & MatrixReflexion.SYMETRIC) == MatrixReflexion.SYMETRIC)
                 {
                     int tmp = i;
                     i = j;
                     j = tmp;
                 }
-
+                if ((_reflexion & MatrixReflexion.VERTICAL) == MatrixReflexion.VERTICAL)
+                    i = Height - 1 - i;
+                if ((_reflexion & MatrixReflexion.HORISONTAL) == MatrixReflexion.HORISONTAL)
+                    j = Height - 1 - j;
+        
                 return _data[i, j];
             }
             set

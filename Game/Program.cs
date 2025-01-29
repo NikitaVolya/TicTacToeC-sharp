@@ -1,44 +1,57 @@
 ﻿using System;
 using TicTacToeObjects;
+using Serilog;
+using System.Linq;
 
 namespace Game
 {
     internal class Program
     {
-        static void Main(string[] args)
+        static public Serilog.Core.Logger logger = new LoggerConfiguration().WriteTo.Debug().CreateLogger();
+
+        static Game game;
+
+        static void PVAIsettings()
         {
-            Game game;
+            string user_input = GameScreen.UserChoice("Choose difficulty level:", 
+                TicTacToeRules.AI_LEVELS.Keys.ToArray());
+            TicTacToeRules.LOAD_STEPS = TicTacToeRules.AI_LEVELS[user_input];
+            
+        }
 
-            Console.WriteLine("How is first?:\n1. X\n2. O");
-            string choice = Console.ReadLine();
-            switch (choice)
+        static void StartGame()
+        {
+            logger.Information("Start");
+            bool game_mode = false;
+
+            switch (GameScreen.UserChoice("Select game mode:", new string[] { "PvP", "PvAI" }))
             {
-                case "1":
-                    TicTacToeRules.FirstStep = TicTacToeSymbls.FirstPlayer;
+                case "PvP":
+                    game_mode = false;
                     break;
-                case "2":
-                    TicTacToeRules.FirstStep = TicTacToeSymbls.SecondPlayer;
+
+                case "PvAI":
+                    PVAIsettings();
+                    game_mode = true;
                     break;
             }
-            Console.WriteLine("Choice game mode:\n1. PvP\n2. PvAI");
 
-            choice = Console.ReadLine();
-            switch (choice)
-            {
-                case "1":
-                    game = new Game(false);
-                    break;
-                    
-                case "2":
-                    game = new Game(true);
-                    break;
-                default:
-                    return;
-            }
+            TicTacToeRules.FirstStep = GameScreen.UserChoice("Who goes first?:",
+                new TicTacToeSymbls[] { TicTacToeSymbls.FirstPlayer, TicTacToeSymbls.SecondPlayer });
+
+            game = new Game(game_mode);
 
             game.Start();
-
             Console.ReadKey();
+        }
+        
+        static void Main(string[] args)
+        {
+            do
+            {
+                StartGame();
+            } while (GameScreen.UserChoice("Start new game?:",
+            new string[] { "yes", "no"}) == "yes");
         }
     }
 }

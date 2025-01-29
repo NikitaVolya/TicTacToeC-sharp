@@ -1,7 +1,9 @@
 ﻿using System;
+using System.Collections.Generic;
 
 namespace TicTacToeObjects
 {
+
     public enum TicTacToeSymbls
     {
         FirstPlayer = 'X',
@@ -14,9 +16,13 @@ namespace TicTacToeObjects
     public class TicTacToeRules
     {
         static float PlayerWinScore = -100.0f;
-        static float AiWinScore = 100.0f;
+        static float AiWinScore = 50.0f;
         static float DrawScore = 0.0f;
+        static public int LOAD_STEPS = 4;
 
+        static public Dictionary<string, int> AI_LEVELS = new Dictionary<string, int>() {
+            {"dumb", 2 }, { "normal", 4}, {"hard", 5 }, {"impossible", 9 } 
+        };
 
         public static TicTacToeSymbls FirstStep = TicTacToeSymbls.FirstPlayer;
 

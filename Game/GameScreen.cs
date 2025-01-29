@@ -12,6 +12,45 @@ namespace Game
             _game = gane;
         }
 
+        static public T UserChoice<T>(string title, T[] menu)
+        {
+            
+            if (menu.Length == 0)
+                throw new Exception();
+            int choice = 0;
+            bool input_cycle = true;
+
+            while (input_cycle)
+            {
+                Console.Clear();
+                Console.WriteLine(title);
+                for (int i = 0; i < menu.Length; i++)
+                {
+                    if (i == choice)
+                        Console.WriteLine("[{0}]", menu[i]);
+                    else
+                        Console.WriteLine(" {0} ",menu[i]);
+                }
+
+                ConsoleKeyInfo user_input = Console.ReadKey();
+
+                switch (user_input.Key)
+                {
+                    case ConsoleKey.UpArrow:
+                        if (choice != 0) choice--;
+                        break;
+                    case ConsoleKey.DownArrow:
+                        if (choice < menu.Length - 1 ) choice++;
+                        break;
+                    case ConsoleKey.Enter:
+                        input_cycle = false;
+                        break;
+                }
+            }
+            Program.logger.Information("Choced option {0}", menu[choice]);
+            return menu[choice];
+        }
+
         private void DrawField(Vector cursor = null)
         {
             Matrix<TicTacToeSymbls> field = _game.GameField;

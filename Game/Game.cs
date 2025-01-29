@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Serilog;
+using System;
 using TicTacToeObjects;
 
 namespace Game
@@ -36,14 +37,23 @@ namespace Game
 
         public void AIStep()
         {
+            Program.logger.Information("AI Step start");
+
             MatrixReflexion reflexion = MatrixReflexion.None;
             if (_game_field != _tree.Value)
-            { 
+            {
+                Program.logger.Information("Move tree to next node position");
                 _tree.MoveTo(_game_field);
+
                 reflexion = _game_field.GetReflexionTo(_tree.Value);
+                Program.logger.Information("Game field reflexion: {0}", reflexion);
             }
 
+
+            Program.logger.Information("Move tree to best node");
             _tree.MoveToBest();
+            _tree.Update();
+
             _game_field = _tree.Value;
             _game_field.Rotate(reflexion);
         }
