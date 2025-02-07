@@ -4,9 +4,12 @@ using TicTacToeObjects;
 
 namespace Game
 {
+    /// <summary>
+    /// Manages the Tic-Tac-Toe game logic, including player turns, AI moves, and game flow.
+    /// Handles the game field, determines the winner, and manages the game loop.
+    /// </summary>
     internal class Game
     {
-        GameScreen _screen;
         Matrix<TicTacToeSymbls> _game_field;
 
         TicTacToeTree _tree;
@@ -15,12 +18,18 @@ namespace Game
         Action _second_player;
         TicTacToeSymbls _current_player = TicTacToeRules.FirstStep;
 
+        /// <summary>
+        /// Gets a clone of the current game field to prevent direct modifications.
+        /// </summary>
         public Matrix<TicTacToeSymbls> GameField { get => _game_field.Clone() as Matrix<TicTacToeSymbls>; }
 
+        /// <summary>
+        /// Initializes a new game of Tic-Tac-Toe.
+        /// Sets up the game field and assigns player or AI control based on the mode.
+        /// </summary>
+        /// <param name="ai_mode">If true, the second player is controlled by AI; otherwise, it's another player.</param>
         public Game(bool ai_mode) {
-            _screen = new GameScreen(this);
             _game_field = new Matrix<TicTacToeSymbls>(TicTacToeSymbls.Space, 3, 3);
-
             _first_player = () => PlayerStep(TicTacToeSymbls.FirstPlayer);
 
             if (ai_mode)
@@ -35,6 +44,11 @@ namespace Game
             }
         }
 
+        /// <summary>
+        /// Executes the AI's turn in the Tic-Tac-Toe game.
+        /// Moves the AI's decision tree to the current game state, selects the best move,
+        /// and updates the game field accordingly.
+        /// </summary>
         public void AIStep()
         {
             Program.logger.Information("AI Step start");
@@ -58,12 +72,20 @@ namespace Game
             _game_field.Rotate(reflexion);
         }
 
+        /// <summary>
+        /// Handles a player's turn by allowing them to select a cell and placing their symbol.
+        /// </summary>
+        /// <param name="symbl">The symbol (X or O) representing the player.</param>
         public void PlayerStep(TicTacToeSymbls symbl)
         {
-            Vector position = _screen.UserInput();
+            Vector position = GameScreen.UserInput(_game_field);
             _game_field[position] = symbl;
         }
 
+        /// <summary>
+        /// Starts and manages the Tic-Tac-Toe game loop until the game is over.
+        /// Alternates turns between players or AI, checks for a winner, and displays the result.
+        /// </summary>
         public void Start()
         {
             while (!TicTacToeRules.IsOver(_game_field))
@@ -75,7 +97,7 @@ namespace Game
 
                 _current_player = TicTacToeRules.GetNext(_current_player);
             }
-            _screen.Draw();
+            GameScreen.DrawField(_game_field);
 
             var end = TicTacToeRules.CheckGame(_game_field);
             if (end == TicTacToeSymbls.FirstPlayer)

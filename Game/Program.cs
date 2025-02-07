@@ -11,14 +11,6 @@ namespace Game
 
         static Game game;
 
-        static void PVAIsettings()
-        {
-            string user_input = GameScreen.UserChoice("Choose difficulty level:", 
-                TicTacToeRules.AI_LEVELS.Keys.ToArray());
-            TicTacToeRules.LOAD_STEPS = TicTacToeRules.AI_LEVELS[user_input];
-            
-        }
-
         static void StartGame()
         {
             logger.Information("Start");
@@ -31,7 +23,8 @@ namespace Game
                     break;
 
                 case "PvAI":
-                    PVAIsettings();
+                    string user_input = GameScreen.UserChoice("Choose difficulty level:", TicTacToeRules.AI_LEVELS.Keys.ToArray());
+                    TicTacToeRules.LOAD_STEPS = TicTacToeRules.AI_LEVELS[user_input];
                     game_mode = true;
                     break;
             }
